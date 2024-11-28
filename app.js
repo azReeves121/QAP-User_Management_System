@@ -1,5 +1,9 @@
 const express = require("express");
 const app = express();
+const bcrypt = require("bcrypt");
+const user = [];
+
+app.use(express.urlencoded({ extended: false }));
 
 app.set("view engine", "ejs");
 
@@ -10,7 +14,7 @@ app.get("/", (req, res) => {
 
 // GET Route to render the login page
 app.get("/login", (req, res) => {
-  // send a messages object (even empty) to avoid ReferenceError
+  // send a messages object to avoid ReferenceError
   res.render("login", { messages: {} });
 });
 
@@ -18,7 +22,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  // Example: Validate login credentials
+  // Validate login credentials
   if (!email || !password) {
     // Render the page with an error message if inputs are missing
     return res.render("login", {
@@ -26,7 +30,7 @@ app.post("/login", (req, res) => {
     });
   }
 
-  // Example: Incorrect email/password handling
+  //  Incorrect email/password handling
   if (email !== "test@example.com" || password !== "123456") {
     return res.render("login", {
       messages: { error: "Invalid email or password!" },
@@ -37,18 +41,24 @@ app.post("/login", (req, res) => {
   res.redirect("/dashboard");
 });
 app.get("/register", (req, res) => {
-  res.render("register", { messages: {} }); // Send an empty messages object
+  res.render("register", { messages: {} });
 });
 
-app.post("/register", (req, res) => {
+app.post("/register", async (req, res) => {
   // Handle validation
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
-    return res.render("register", {
-      messages: { error: "All fields are required!" },
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    user.push({
+      id: Date.now().toString(),
+      name: req.body.name,
+      email: req.body.email,
+      password: req.hashedPassword,
     });
+    res.redirect("/login");
+  } catch (e) {
+    console.log(e);
+    res.redirect("/register");
   }
-  // Continue with registration logic
 });
 
 app.listen(3000);
