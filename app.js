@@ -4,13 +4,13 @@ const app = express();
 app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
-  const user = req.session?.user || { name: "Guest" }; // Example with session or fallback
+  const user = req.session?.user || { name: "Guest" };
   res.render("home", { name: user.name });
 });
 
 // GET Route to render the login page
 app.get("/login", (req, res) => {
-  // Always send a messages object (even empty) to avoid ReferenceError
+  // send a messages object (even empty) to avoid ReferenceError
   res.render("login", { messages: {} });
 });
 
