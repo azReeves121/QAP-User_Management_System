@@ -70,4 +70,20 @@ app.get("/register", checkNotAuthenticated, (req, res) => {
   res.render("register.ejs");
 });
 
+// functions
+
+function checkAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/login");
+}
+
+function checkNotAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return res.redirect("/");
+  }
+  next();
+}
+
 app.listen(3000);
