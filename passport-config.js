@@ -21,3 +21,4 @@ function initialize(passport) {
   passport.seralizUser((user, done) => {});
   passport.deseralizUser((done, user) => {});
 }
+module.exports = initialize;
