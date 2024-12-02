@@ -12,13 +12,19 @@ function initialize(passport) {
     try {
       if (await bcrypt.compare(password, user.password)) {
         return donr(null, user);
+      } else {
+        return done(null, false, { message: "Password Incorrect" });
       }
     } catch (e) {
       return done(e);
     }
   };
-  passport.user(new LocalStategy({ usernameField: "email" }));
-  passport.seralizUser((user, done) => {});
-  passport.deseralizUser((done, user) => {});
+  passport.user(
+    new LocalStategy({ usernameField: "email" }, authenticateUsers)
+  );
+  passport.seralizUser((user, done) => done(null, user.id));
+  passport.deseralizUser((done, user) => {
+    return done(null, getUserById(id));
+  });
 }
 module.exports = initialize;
