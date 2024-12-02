@@ -9,6 +9,7 @@ const passport = require("passport");
 const initializePassport = require("./passport-config");
 const flash = require("express-flash");
 const session = require("express-session");
+
 initializePassport(
   passport,
   (email) => users.find((user) => user.email === email),
@@ -40,47 +41,8 @@ app.post(
   })
 );
 
-app.set("view engine", "ejs");
-
-app.get("/", (req, res) => {
-  const user = req.session?.user || { name: "Guest" };
-  res.render("home", { name: user.name });
-});
-
-// GET Route to render the login page
-app.get("/login", (req, res) => {
-  // send a messages object to avoid ReferenceError
-  res.render("login", { messages: {} });
-});
-
-// POST Route to handle login logic
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-
-  // Validate login credentials
-  if (!email || !password) {
-    // Render the page with an error message if inputs are missing
-    return res.render("login", {
-      messages: { error: "Email and Password are required!" },
-    });
-  }
-
-  //  Incorrect email/password handling
-  if (email !== "test@example.com" || password !== "123456") {
-    return res.render("login", {
-      messages: { error: "Invalid email or password!" },
-    });
-  }
-
-  // On successful login
-  res.redirect("/dashboard");
-});
-app.get("/register", (req, res) => {
-  res.render("register", { messages: {} });
-});
-
+// Configuring the register post functionality
 app.post("/register", async (req, res) => {
-  // Handle validation
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     user.push({
@@ -94,6 +56,18 @@ app.post("/register", async (req, res) => {
     console.log(e);
     res.redirect("/register");
   }
+});
+// Routes
+app.get("/", checkAuthenticated, (req, res) => {
+  res.render("index.ejs", { name: req.user.name });
+});
+
+app.get("/login", checkNotAuthenticated, (req, res) => {
+  res.render("login.ejs");
+});
+
+app.get("/register", checkNotAuthenticated, (req, res) => {
+  res.render("register.ejs");
 });
 
 app.listen(3000);
