@@ -13,17 +13,17 @@ const methodOverride = require("method-override");
 
 initializePassport(
   passport,
-  (email) => users.find((user) => user.email === email),
-  (id) => users.find((user) => user.id === id)
+  (email) => Users.find((user) => user.email === email),
+  (id) => Users.find((user) => user.id === id)
 );
 
-const user = [];
+const Users = [];
 
 app.use(express.urlencoded({ extended: false }));
 app.use(flash());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || "default-secret",
     resave: false,
     saveUninitialized: false,
   })
@@ -47,11 +47,11 @@ app.post(
 app.post("/register", async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    user.push({
+    Users.push({
       id: Date.now().toString(),
       name: req.body.name,
       email: req.body.email,
-      password: req.hashedPassword,
+      password: hashedPassword,
     });
     res.redirect("/login");
   } catch (e) {
@@ -71,6 +71,12 @@ app.get("/login", checkNotAuthenticated, (req, res) => {
 app.get("/register", checkNotAuthenticated, (req, res) => {
   res.render("register.ejs");
 });
+app.get("/admin", checkAuthenticated, (req, res) => {
+  if (req.user.role !== "admin") {
+    return res.redirect("/");
+  }
+  res.render("admin.ejs", { users });
+});
 
 app.delete("/logout", (req, res) => {
   req.logout(req.user, (err) => {
@@ -79,7 +85,7 @@ app.delete("/logout", (req, res) => {
   });
 });
 
-// functions
+// functions for authentication checks
 
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
