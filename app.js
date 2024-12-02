@@ -72,6 +72,13 @@ app.get("/register", checkNotAuthenticated, (req, res) => {
   res.render("register.ejs");
 });
 
+app.delete("/logout", (req, res) => {
+  req.logout(req.user, (err) => {
+    if (err) return next(err);
+    res.redirect("/");
+  });
+});
+
 // functions
 
 function checkAuthenticated(req, res, next) {
